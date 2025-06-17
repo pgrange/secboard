@@ -2,21 +2,26 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+    >
   <title>Scan de domaine</title>
   <style>
     #loading { display: none; }
   </style>
 </head>
 <body>
-  <h1>Scan de domaine</h1>
-  <form id="scan-form">
-    <input type="text" id="domain" placeholder="ex: example.com" required>
-    <button type="submit">Lancer le scan</button>
-  </form>
+  <main class="container">   
+    <h1>Scan de domaine</h1>
+    <form id="scan-form">
+      <input type="text" id="domain" placeholder="ex: example.com" required>
+      <button type="submit">Lancer le scan</button>
+    </form>
 
-  <div id="loading">🔄 Scan en cours...</div>
-  <pre id="result"></pre>
-
+    <div id="loading">🔄 Scan en cours...</div>
+    <pre id="result"></pre>
+  </main>
   <script>
     const form = document.getElementById('scan-form');
     const loading = document.getElementById('loading');
