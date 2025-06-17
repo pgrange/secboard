@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Scan de domaine</title>
+  <style>
+    #loading { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Scan de domaine</h1>
+  <form id="scan-form">
+    <input type="text" id="domain" placeholder="ex: example.com" required>
+    <button type="submit">Lancer le scan</button>
+  </form>
+
+  <div id="loading">🔄 Scan en cours...</div>
+  <pre id="result"></pre>
+
+  <script>
+    const form = document.getElementById('scan-form');
+    const loading = document.getElementById('loading');
+    const result = document.getElementById('result');
+
+    let pollingInterval = null;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const domain = document.getElementById('domain').value.trim();
+      if (!domain) return;
+
+      loading.style.display = 'block';
+      result.textContent = '';
+
+      // Démarre le scan (ou rejoint un scan déjà en cours)
+      const res = await fetch('/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain })
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        result.textContent = "Erreur lors du lancement.";
+        loading.style.display = 'none';
+        return;
+      }
+
+      // Démarre le polling
+      pollingInterval = setInterval(async () => {
+        const pollRes = await fetch(`/scan/${encodeURIComponent(domain)}/status`);
+        const pollData = await pollRes.json();
+
+        if (pollData.status === 'pending') {
+          console.log('En attente...');
+        } else {
+          clearInterval(pollingInterval);
+          loading.style.display = 'none';
+          if (pollData.status === 'done') {
+            result.textContent = `✅ Succès:\n${pollData.output}`;
+          } else {
+            result.textContent = `❌ Échec:\n${pollData.output}`;
+          }
+        }
+      }, 2000); // 2 sec de délai entre chaque requête
+    });
+  </script>
+</body>
+</html>
+

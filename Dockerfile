@@ -26,6 +26,22 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install application
-COPY scan /opt/bin/
-RUN chmod +x /opt/bin/scan
+RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - \
+  && apt-get update \
+  && apt-get install -y nodejs \
+  && rm -rf /var/lib/apt/lists/*
 
+RUN mkdir /srv/secboard
+RUN mkdir /srv/secboard/public
+
+COPY scan /srv/secboard
+RUN chmod +x /srv/secboard/scan
+
+COPY package.json /srv/secboard/
+COPY public/ /srv/secboard/public/
+COPY server.js /srv/secboard/
+
+WORKDIR /srv/secboard
+RUN npm install
+
+CMD ["npm", "start"]
