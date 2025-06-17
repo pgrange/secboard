@@ -40,6 +40,7 @@ RUN chmod +x /srv/secboard/scan
 COPY package.json /srv/secboard/
 COPY public/ /srv/secboard/public/
 COPY server.js /srv/secboard/
+COPY parser.js /srv/secboard/
 
 WORKDIR /srv/secboard
 RUN npm install

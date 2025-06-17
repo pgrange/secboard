@@ -13,4 +13,4 @@ domain="$1"
 
 nmap -sV --script vulners --script-args mincvss=5.0 -oX - "$domain"
 
-/opt/bin/testssl.sh "$domain"
+# /opt/bin/testssl.sh "$domain"

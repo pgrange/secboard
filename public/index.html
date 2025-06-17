@@ -57,7 +57,14 @@
           clearInterval(pollingInterval);
           loading.style.display = 'none';
           if (pollData.status === 'done') {
-            result.textContent = `✅ Succès:\n${pollData.output}`;
+            const gradeEmoji = pollData.output.grade === 'A' ? '✅' : '❌';
+            result.innerHTML = `<div>Note du scan de votre site : ${gradeEmoji} ${pollData.output.grade}</div>`;
+            result.innerHTML += `<ul>`;
+              for (port of pollData.output.open_ports) {
+                const service = port.service;
+                result.innerHTML += `<li>Port ${service.id} : ${service.vulnerabilities.length} vulnérabilités</li>`;
+              }
+            result.innerHTML +=`</ul>`;
           } else {
             result.textContent = `❌ Échec:\n${pollData.output}`;
           }

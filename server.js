@@ -1,6 +1,7 @@
 const express = require('express');
 const { exec } = require('child_process');
 const path = require('path');
+const parse = require('./parser');
 const app = express();
 const PORT = 3000;
 
@@ -24,11 +25,11 @@ app.post('/scan', (req, res) => {
     // Sinon, on le marque en pending et on lance le scan
     scans[domain] = { status: 'pending', output: null };
 
-    exec(`./scan "${domain}"`, (error, stdout, stderr) => {
+    exec(`./scan "${domain}"`, async (error, stdout, stderr) => {
         if (error) {
-            scans[domain] = { status: 'error', output: stderr };
+            scans[domain] = { status: 'error', output: stderr, stdout, stderr };
         } else {
-            scans[domain] = { status: 'done', output: stdout };
+            scans[domain] = { status: 'done', output: await parse(stdout, true, true), stdout, stderr };
         }
     });
 
@@ -42,9 +43,7 @@ app.get('/scan/:domain/status', (req, res) => {
     if (!domain || !scans[domain]) {
         return res.status(404).json({ success: false, error: "Aucune tâche en cours ou passée pour ce domaine" });
     }
-
-    const { status, output } = scans[domain];
-    res.json({ success: true, status, output });
+    res.json(scans[domain]);
 });
 
 app.listen(PORT, () => {
