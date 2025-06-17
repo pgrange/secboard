@@ -3,7 +3,7 @@ const { exec } = require('child_process');
 const path = require('path');
 const parse = require('./parser');
 const app = express();
-const PORT = 3000;
+const PORT = 8080;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
