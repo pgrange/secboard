@@ -8,7 +8,34 @@
     >
   <title>Scan de domaine</title>
   <style>
-    #loading { display: none; }
+    .grade {
+      color: white;
+    }
+
+    .A {
+      background-color: hsl(120, 80%, 40%);
+    }
+
+    .B {
+      background-color: hsl(90, 80%, 45%);
+    }
+
+    .C {
+      background-color: hsl(60, 90%, 50%);
+      color: black;
+    }
+
+    .D {
+      background-color: hsl(30, 90%, 50%);
+    }
+
+    .E {
+      background-color: hsl(10, 85%, 45%);
+    }
+
+    .F {
+      background-color: hsl(0, 80%, 40%);
+    }
   </style>
 </head>
 <body>
@@ -19,13 +46,34 @@
       <button type="submit">Lancer le scan</button>
     </form>
 
-    <div id="loading">🔄 Scan en cours...</div>
-    <pre id="result"></pre>
+    <div id="statut"></div>
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th scope="col">nmap</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Résultats</th>
+          <td id="resultat-nmap" class="grade"></td>
+        </tr>
+        <tr>
+          <th scope="row">Détails</th>
+          <td id="details-nmap"></td>
+        </tr>
+      </tbody>
+    </table>
+    <pre id="result-nmap"></pre>
   </main>
   <script>
     const form = document.getElementById('scan-form');
-    const loading = document.getElementById('loading');
-    const result = document.getElementById('result');
+    const statut = document.getElementById('statut');
+    const resultatNmap = document.getElementById('resultat-nmap');
+    const detailsNmap = document.getElementById('details-nmap');
+    const input = document.querySelector('form input');
+    const bouton = document.querySelector('form button');
 
     let pollingInterval = null;
 
@@ -34,10 +82,14 @@
       const domain = document.getElementById('domain').value.trim();
       if (!domain) return;
 
-      loading.style.display = 'block';
-      result.textContent = '';
+      input.setAttribute('disabled', 'true');
+      bouton.setAttribute('disabled', 'true');
 
-      // Démarre le scan (ou rejoint un scan déjà en cours)
+      statut.textContent = 'Scan en cours...';
+      statut.setAttribute("aria-busy", "true");
+      resultatNmap.setAttribute("aria-busy", "true");
+      detailsNmap.setAttribute("aria-busy", "true");
+
       const res = await fetch('/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -45,33 +97,44 @@
       });
 
       const data = await res.json();
-      if (!data.success) {
-        result.textContent = "Erreur lors du lancement.";
-        loading.style.display = 'none';
+      if (!data.id) {
+        statut.textContent = "Erreur lors du lancement.";
         return;
       }
 
-      // Démarre le polling
       pollingInterval = setInterval(async () => {
-        const pollRes = await fetch(`/scan/${encodeURIComponent(domain)}/status`);
+        const pollRes = await fetch(`/scan/${data.id}`);
         const pollData = await pollRes.json();
 
-        if (pollData.status === 'pending') {
+
+        if (pollData.statut === 'en cours') {
           console.log('En attente...');
         } else {
           clearInterval(pollingInterval);
-          loading.style.display = 'none';
-          if (pollData.status === 'done') {
-            const gradeEmoji = pollData.output.grade === 'A' ? '✅' : '❌';
-            result.innerHTML = `<div>Note du scan de votre site : ${gradeEmoji} ${pollData.output.grade}</div>`;
-            result.innerHTML += `<ul>`;
-              for (port of pollData.output.open_ports) {
+          statut.setAttribute("aria-busy", "false");
+          resultatNmap.setAttribute("aria-busy", "false");
+          detailsNmap.setAttribute("aria-busy", "false");
+          input.disabled = false;
+          bouton.disabled = false;
+
+          if (pollData.statut === 'terminé') {
+            statut.textContent = '✅ Scan terminé';
+            const nmap = pollData.scans.find(s => s.nom === 'nmap')
+            const resultatsNmap = nmap?.resultats;
+            const note = resultatsNmap.grade
+            const gradeEmoji = note === 'A' ? '✅' : '❌';
+            resultatNmap.innerText = `${gradeEmoji} ${note}`;
+            resultatNmap.classList.add(note);
+            detailsNmap.innerHTML += `<ul>`;
+              for (port of resultatsNmap.open_ports) {
                 const service = port.service;
-                result.innerHTML += `<li>Port ${service.id} : ${service.vulnerabilities.length} vulnérabilités</li>`;
+                detailsNmap.innerHTML += `<li>Port ${service.id} : ${service.vulnerabilities.length} vulnérabilités</li>`;
               }
-            result.innerHTML +=`</ul>`;
+            detailsNmap.innerHTML +=`</ul>`;
           } else {
-            result.textContent = `❌ Échec:\n${pollData.output}`;
+            statut.textContent = '❌ Erreurs lors du scan';
+            const nmap = pollData.scans.find(s => s.nom === 'nmap')
+            detailsNmap.textContent = `❌ Échec:\n${nmap.erreur}`;
           }
         }
       }, 2000); // 2 sec de délai entre chaque requête

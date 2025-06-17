@@ -1,10 +1,9 @@
 {
   "name": "secboard",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/server.ts",
   "scripts": {
-    "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node --import tsx src/server.ts"
   },
   "keywords": [],
   "author": "",
@@ -12,6 +11,12 @@
   "description": "",
   "dependencies": {
     "express": "^5.1.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
     "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/xml2js": "^0.4.14"
   }
 }
