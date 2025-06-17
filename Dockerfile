@@ -25,4 +25,7 @@ RUN apt-get update && apt-get install -y \
     nmap \
     && rm -rf /var/lib/apt/lists/*
 
+# Install application
+COPY scan /opt/bin/
+RUN chmod +x /opt/bin/scan
 

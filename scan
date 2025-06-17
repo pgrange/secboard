@@ -1,0 +1,16 @@
+#!/bin/bash
+
+usage() {
+  echo "$0 <domain name>" >&2
+  echo >&2
+  echo Scans your domain for various security checks. >&2
+
+  exit 1
+}
+
+[[ $# -ne 1 ]] && usage
+domain="$1"
+
+nmap -sV --script vulners --script-args mincvss=5.0 -oA output "$domain"
+
+/opt/bin/testssl.sh "$domain"
