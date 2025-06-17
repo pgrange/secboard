@@ -21,7 +21,7 @@ const transform = (data, withVulnerabilities) => {
   json['closed_ports'] = data.nmaprun.host[0].ports[0].extraports[0].$.count;
   json['open_ports'] = [];
   var open_ports = data.nmaprun.host[0].ports[0].port;
-  open_ports.forEach((port) => {
+  open_ports?.forEach((port) => {
     var open_port = {};
     open_port['service'] = {};
     open_port['service']['name'] = port.service[0].$.name
