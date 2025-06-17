@@ -1,5 +1,7 @@
 FROM debian:latest
 
+# Install testssl
+
 RUN apt-get update && apt-get install -y \
     curl \
     tar \
@@ -17,4 +19,10 @@ WORKDIR /opt
 RUN curl -L https://github.com/testssl/testssl.sh/archive/refs/tags/v3.2.1.tar.gz | tar xz
 RUN mkdir /opt/bin
 RUN ln -s /opt/testssl.sh-*/testssl.sh bin/testssl.sh
+
+# Install nmap
+RUN apt-get update && apt-get install -y \
+    nmap \
+    && rm -rf /var/lib/apt/lists/*
+
 
