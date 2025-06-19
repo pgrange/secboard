@@ -34,13 +34,9 @@ RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - \
 RUN mkdir /srv/secboard
 RUN mkdir /srv/secboard/public
 
-COPY scan /srv/secboard
-RUN chmod +x /srv/secboard/scan
-
 COPY package.json /srv/secboard/
 COPY public/ /srv/secboard/public/
-COPY server.js /srv/secboard/
-COPY parser.js /srv/secboard/
+COPY src/ /srv/secboard/src/
 
 WORKDIR /srv/secboard
 RUN npm install
